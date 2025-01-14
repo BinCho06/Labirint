@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/labirint.js" defer=""></script>
+    <script src="js/script.js" defer=""></script>
+    <title>Maze Generator</title>
+</head>
+<body>
+    <canvas id="mazeCanvas" width="600" height="600"></canvas>
+    <div id="options">
+        <button id="solution" onclick="drawSolution()">Solution</button>
+        <button id="start" onclick="startGeneration()">Start</button>
+        <button id="stop" onclick="stopGeneration()" disabled>Stop</button>
+        <div>
+            <p id="text">Premiki na sekundo:<span id="rangeValue">1</span></p>
+            <input type="range" name="speed" id="rangeInput" min="1" max="22.4" value="1" step="0.1">
+        </div>
+    </div>
+</body>
+</html>
