@@ -3,7 +3,7 @@ const rangeInput = document.getElementById('rangeInput');
 const rangeValue = document.getElementById('rangeValue');
 
 rangeInput.addEventListener('input', () => {
-    rangeValue.textContent = Math.min(Math.floor(rangeInput.value*rangeInput.value),500);
+    rangeValue.textContent = Math.floor(rangeInput.value*rangeInput.value);
 });
 //
 

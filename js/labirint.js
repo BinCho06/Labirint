@@ -4,6 +4,7 @@ const cellSize = 20;
 const rows = Math.floor(canvas.width / cellSize);
 const cols = Math.floor(canvas.height / cellSize);
 
+let intervals = [];
 let maze = [];
 let rootIndex = 0;
 
@@ -17,6 +18,14 @@ class Node {
 }
 
 init();
+
+function init() {
+    initializeMaze();
+    drawBorder();
+    drawMaze();
+    drawRoot();
+    generateInstantly(50000);
+}
 
 function initializeMaze() {
     for (let i = 0; i < rows; i++) {
@@ -39,32 +48,8 @@ function initializeMaze() {
     }
 }
 
-function drawBorder() {
-    ctx.beginPath();
-
-    ctx.moveTo(0, 0);
-    ctx.lineTo(0, canvas.height);
-
-    ctx.moveTo(0, 0);
-    ctx.lineTo(canvas.width/2, 0);
-    ctx.moveTo(canvas.width/2+20, 0);
-    ctx.lineTo(canvas.width, 0);
-
-    ctx.moveTo(canvas.width, 0);
-    ctx.lineTo(canvas.width, canvas.height);
-
-    ctx.moveTo(0, canvas.height);
-    ctx.lineTo(canvas.width/2, canvas.height);
-    ctx.moveTo(canvas.width/2+20, canvas.height);
-    ctx.lineTo(canvas.width, canvas.height);
-
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 4;
-    ctx.stroke();
-}
-
 function setRoot(x, y) {
-    const newRoot = maze.find(node => node.x === x && node.y === y);
+    const newRoot = maze[y * cols + x];
     recursiveRootSwitch(newRoot);
     rootIndex = maze.indexOf(newRoot);
 }
@@ -75,7 +60,7 @@ function recursiveRootSwitch(node){
     switchRoot(node.parent, node);
 }
 
-function shiftRoot() {
+function randomRootShift() {
     const directions = [
         { dx: 0, dy: -1 }, // Up
         { dx: 0, dy: 1 },  // Down
@@ -104,7 +89,6 @@ function shiftRoot() {
     const newRoot = maze[rootIndex];
 
     switchRoot(currentRoot, newRoot)
-    
 }
 
 function switchRoot(oldRoot, newRoot) {
@@ -121,27 +105,91 @@ function switchRoot(oldRoot, newRoot) {
     newRoot.parent = null;
 }
 
+function drawMazeUpdate() {
+    randomRootShift();
+    drawMaze();
+    drawRoot();
+}
+
+function generateInstantly(repetitions) {
+    let i=0;
+    while (i<repetitions) {
+        randomRootShift();
+        i++;
+    }
+    drawMaze();
+}
+
+function startGeneration() {
+    drawMazeUpdate()
+
+    let speed = Math.pow(document.getElementById("rangeInput").value, 2);
+    while (speed > 200){
+        intervals.push(setInterval(drawMazeUpdate, 5));
+        speed-=200;
+    }
+    intervals.push(setInterval(drawMazeUpdate, 1000/speed));
+
+    //temp
+    document.getElementById("start").disabled = true;
+    document.getElementById("stop").disabled = false;
+    document.getElementById('solution').disabled = true;
+    document.getElementById('rangeInput').disabled = true;
+}
+
+function stopGeneration() {
+    while (intervals.length > 0){
+        clearInterval(intervals.pop());
+    }
+    drawMaze();
+
+    //temp
+    document.getElementById("start").disabled = false;
+    document.getElementById("stop").disabled = true;
+    document.getElementById('solution').disabled = false;
+    document.getElementById('rangeInput').disabled = false;
+}
+
+function drawBorder() {
+    ctx.beginPath();
+
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, canvas.height);
+
+    ctx.moveTo(0, 0);
+    ctx.lineTo(canvas.width/2, 0);
+    ctx.moveTo(canvas.width/2+20, 0);
+    ctx.lineTo(canvas.width, 0);
+
+    ctx.moveTo(canvas.width, 0);
+    ctx.lineTo(canvas.width, canvas.height);
+
+    ctx.moveTo(0, canvas.height);
+    ctx.lineTo(canvas.width/2, canvas.height);
+    ctx.moveTo(canvas.width/2+20, canvas.height);
+    ctx.lineTo(canvas.width, canvas.height);
+
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 4;
+    ctx.stroke();
+}
+
 function drawMaze() {
     ctx.clearRect(2, 2, canvas.width-4, canvas.height-4);
     ctx.beginPath();
 
     maze.forEach(node => {
-        let top=true, left=true;
+        let left = node.x != 0;
+        let top = node.y != 0;
 
         if(node.parent){
-        if(node.x == 0 || node.parent.x < node.x){
-            left=false
+            if(node.parent.x < node.x) left=false;
+            if(node.parent.y < node.y) top=false;
         }
-        if(node.y == 0 || node.parent.y < node.y){
-            top=false
-        }}
+        
         node.children.forEach(child => {
-            if(child.x < node.x){
-              left=false
-            }
-            if(child.y < node.y){
-              top=false
-            }
+            if(child.x < node.x) left=false;
+            if(child.y < node.y) top=false;
         });
         
         if(left){
@@ -169,51 +217,12 @@ function drawRoot() {
     ctx.stroke();
 }
 
-function transformMaze() {
-    shiftRoot();
-    drawMaze();
-    drawRoot();
-}
-
-function generateInstantly(repetitions) {
-    let i=0;
-    while (i<repetitions) {
-        shiftRoot();
-        i++;
-    }
-    drawMaze();
-}
-
-let speed
-let intervalID;
-function startGeneration() {
-    speed = 1000 / Math.pow(document.getElementById("rangeInput").value, 2);
-    intervalID = setInterval(transformMaze, speed);
-
-    //temp
-    document.getElementById("start").disabled = true;
-    document.getElementById("stop").disabled = false;
-    document.getElementById('solution').disabled = true;
-    document.getElementById('rangeInput').disabled = true;
-}
-
-function stopGeneration() {
-    clearInterval(intervalID);
-    drawMaze();
-
-    //temp
-    document.getElementById("start").disabled = false;
-    document.getElementById("stop").disabled = true;
-    document.getElementById('solution').disabled = false;
-    document.getElementById('rangeInput').disabled = false;
-}
-
 function drawSolution() {
     ctx.beginPath();
 
     setRoot(15, 29);
 
-    let node = maze.find(node => node.x === 15 && node.y === 0)
+    let node = maze[15] // maze[y * cols + x]
     while(node.parent !== null){
         ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
         ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2)
@@ -221,14 +230,6 @@ function drawSolution() {
     }
 
     ctx.strokeStyle = "red";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.stroke();
-}
-
-function init() {
-    initializeMaze();
-    drawBorder();
-    drawMaze();
-    drawRoot();
-    generateInstantly(100000);
 }
