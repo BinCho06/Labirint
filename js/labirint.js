@@ -1,12 +1,16 @@
 const canvas = document.getElementById("mazeCanvas");
 const ctx = canvas.getContext("2d");
-const cellSize = 20;
-const rows = Math.floor(canvas.width / cellSize);
+const rows = 30;
+const cellSize = Math.floor(canvas.width / rows);
 const cols = Math.floor(canvas.height / cellSize);
 
-let intervals = [];
-let maze = [];
-let rootIndex = 0;
+let solutionShown = false;
+
+var maze = [];
+var rootIndex = 0, playerIndex = 15;
+var gameInterval, mazeInterval;
+var moveDown, moveUp, moveLeft, moveRight;
+let isMouseDown = false;
 
 class Node {
     constructor(parentNode, x, y) {
@@ -22,8 +26,6 @@ init();
 function init() {
     initializeMaze();
     drawBorder();
-    drawMaze();
-    drawRoot();
     generateInstantly(50000);
 }
 
@@ -51,13 +53,12 @@ function initializeMaze() {
 function setRoot(x, y) {
     const newRoot = maze[y * cols + x];
     recursiveRootSwitch(newRoot);
-    rootIndex = maze.indexOf(newRoot);
 }
 
 function recursiveRootSwitch(node){
-    if(node.parent == null) return;
+    if(node.parent == null) return; // Follow the "pointers" to the parent
     recursiveRootSwitch(node.parent);
-    switchRoot(node.parent, node);
+    switchRoot(node.parent, node); // Turn the "pointers" around while backtracking 
 }
 
 function randomRootShift() {
@@ -71,22 +72,13 @@ function randomRootShift() {
     let currentRoot = maze[rootIndex];
     let currentX = currentRoot.x;
     let currentY = currentRoot.y;
-
-    let validDirection = null;
-    while (!validDirection) {
+    do{
         const randomDirection = directions[Math.floor(Math.random() * directions.length)];
-        const newX = currentX + randomDirection.dx;
-        const newY = currentY + randomDirection.dy;
+        var newX = currentX + randomDirection.dx;
+        var newY = currentY + randomDirection.dy;
+    } while(!(newX >= 0 && newX < cols && newY >= 0 && newY < rows));
 
-        if (newX >= 0 && newX < cols && newY >= 0 && newY < rows) {
-            validDirection = randomDirection;
-        }
-    }
-    const newX = currentX + validDirection.dx;
-    const newY = currentY + validDirection.dy;
-
-    rootIndex = newY * cols + newX;
-    const newRoot = maze[rootIndex];
+    const newRoot = maze[newY * cols + newX];
 
     switchRoot(currentRoot, newRoot)
 }
@@ -103,12 +95,18 @@ function switchRoot(oldRoot, newRoot) {
 
     // 4. Make the new root's parent null
     newRoot.parent = null;
+
+    // 5. Update the root index
+    rootIndex = newRoot.y*cols + newRoot.x;
 }
 
 function drawMazeUpdate() {
     randomRootShift();
     drawMaze();
     drawRoot();
+    if(gameInterval){
+        drawPlayer();
+    }
 }
 
 function generateInstantly(repetitions) {
@@ -121,14 +119,11 @@ function generateInstantly(repetitions) {
 }
 
 function startGeneration() {
+    solutionShown=false;
     drawMazeUpdate()
 
     let speed = Math.pow(document.getElementById("rangeInput").value, 2);
-    while (speed > 200){
-        intervals.push(setInterval(drawMazeUpdate, 5));
-        speed-=200;
-    }
-    intervals.push(setInterval(drawMazeUpdate, 1000/speed));
+    mazeInterval = setInterval(drawMazeUpdate, 1000/speed);
 
     //temp
     document.getElementById("start").disabled = true;
@@ -138,9 +133,8 @@ function startGeneration() {
 }
 
 function stopGeneration() {
-    while (intervals.length > 0){
-        clearInterval(intervals.pop());
-    }
+    clearInterval(mazeInterval);
+    mazeInterval = null;
     drawMaze();
 
     //temp
@@ -148,6 +142,77 @@ function stopGeneration() {
     document.getElementById("stop").disabled = true;
     document.getElementById('solution').disabled = false;
     document.getElementById('rangeInput').disabled = false;
+}
+
+function toggleSolution(){
+    drawMaze();
+    if(!solutionShown) {
+        drawSolution();
+    }
+    solutionShown = !solutionShown;
+}
+
+function startGame() {
+    gameInterval = setInterval(gameUpdate, 100);
+    document.getElementById("game").disabled = true;
+}
+
+function gameUpdate() {
+    movePlayer();
+    checkWin();
+
+    drawMaze();
+    drawRoot();
+    drawPlayer();
+}
+
+function movePlayer() {
+    let path = getPaths(maze[playerIndex]);
+
+    console.log(path);
+    if(moveUp && path[2]){
+        playerIndex -= cols;
+    } else if(moveRight && path[1]){
+        playerIndex += 1;
+    } else if(moveDown && path[-2]){
+        playerIndex += cols;
+    } else if(moveLeft && path[-1]){
+        playerIndex -= 1;
+    }
+}
+
+function getPaths(node) {
+    let path = []
+
+    if(node.parent){
+        path[node.parent.x - node.x] = true;
+        path[2*(node.y - node.parent.y)] = true;
+    }
+    
+    node.children.forEach(child => {
+        path[child.x - node.x] = true;
+        path[2*(node.y - child.y)] = true;
+    });
+    return path;
+}
+
+function checkWin() {
+    if(playerIndex === 29*cols + 15){
+        alert('You win!');
+        resetGame();
+        // TODO
+    }
+}
+
+function resetGame() {
+    clearInterval(gameInterval);
+    generateInstantly(50000);
+
+    playerIndex = 15;
+    moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
+
+    drawPlayer();
+    gameInterval = setInterval(gameUpdate, 100);
 }
 
 function drawBorder() {
@@ -217,6 +282,16 @@ function drawRoot() {
     ctx.stroke();
 }
 
+function drawPlayer() {
+    ctx.beginPath();
+
+    ctx.arc(maze[playerIndex].x*cellSize + cellSize/2, maze[playerIndex].y*cellSize + cellSize/2, 0.4*cellSize, 0, 2 * Math.PI);
+
+    ctx.fillStyle = "blue";             
+    ctx.fill();                        
+    ctx.closePath();
+}
+
 function drawSolution() {
     ctx.beginPath();
 
@@ -233,3 +308,106 @@ function drawSolution() {
     ctx.lineWidth = 4;
     ctx.stroke();
 }
+
+function drawUpdate() {
+    drawMaze();
+    drawRoot();
+    if(gameInterval){
+        drawPlayer();
+    }
+    solutionShown = false;
+}
+
+canvas.addEventListener('mousedown', (event) => {
+    if(mazeInterval != null) return;
+    isMouseDown = true;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = Math.max(0, Math.floor((event.clientX - rect.left)/cellSize));
+    const y = Math.max(0, Math.floor((event.clientY - rect.top)/cellSize));
+    setRoot(x, y);
+    drawUpdate();
+});
+
+document.addEventListener('mouseup', (event) => {
+    isMouseDown = false;
+    drawMaze();
+});
+
+canvas.addEventListener('mousemove', (event) => {
+    if(isMouseDown) {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.max(0, Math.floor((event.clientX - rect.left)/cellSize));
+        const y = Math.max(0, Math.floor((event.clientY - rect.top)/cellSize));
+        const clickIndex = y*cols + x;
+
+        let ouOfReach = Math.abs(maze[clickIndex].x - maze[rootIndex].x) + Math.abs(maze[clickIndex].y - maze[rootIndex].y) > 1;
+        let cellChanged = clickIndex !== rootIndex;
+        if(ouOfReach){
+            setRoot(x, y);
+            drawUpdate();
+        } else if(cellChanged){
+            switchRoot(maze[rootIndex], maze[clickIndex]);
+            drawUpdate();
+        }
+    }
+});
+
+
+document.onkeydown = function(e) {
+    switch (e.keyCode) {
+        case 37:
+            moveLeft=true;
+            break;
+        case 65:
+            moveLeft=true;
+            break;
+        case 38:
+            moveUp=true;
+            break;
+        case 87:
+            moveUp=true;
+            break;
+        case 39:
+            moveRight=true;
+            break;
+        case 68:
+            moveRight=true;
+            break;
+        case 40:
+            moveDown=true;
+            break;
+        case 83:
+            moveDown=true;
+            break;
+    }
+};
+
+document.onkeyup = function(e) {
+    switch (e.keyCode) {
+        case 37:
+            moveLeft=false;
+            break;
+        case 65:
+            moveLeft=false;
+            break;
+        case 38:
+            moveUp=false;
+            break;
+        case 87:
+            moveUp=false;
+            break;
+        case 39:
+            moveRight=false;
+            break;
+        case 68:
+            moveRight=false;
+            break;
+        case 40:
+            moveDown=false;
+            break;
+        case 83:
+            moveDown=false;
+            break;
+    }
+};
