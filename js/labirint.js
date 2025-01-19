@@ -159,11 +159,12 @@ function startGame() {
 
 function gameUpdate() {
     movePlayer();
-    checkWin();
 
     drawMaze();
     drawRoot();
     drawPlayer();
+    
+    checkWin();
 }
 
 function movePlayer() {
@@ -269,6 +270,7 @@ function drawMaze() {
 
     ctx.strokeStyle = "black";
     ctx.lineWidth = 2;
+    ctx.lineCap = "round";
     ctx.stroke();
 }
 
@@ -318,6 +320,7 @@ function drawUpdate() {
     solutionShown = false;
 }
 
+/*
 canvas.addEventListener('mousedown', (event) => {
     if(mazeInterval != null) return;
     isMouseDown = true;
@@ -352,7 +355,7 @@ canvas.addEventListener('mousemove', (event) => {
         }
     }
 });
-
+*/
 
 document.onkeydown = function(e) {
     switch (e.keyCode) {
