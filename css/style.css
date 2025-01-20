@@ -8,22 +8,34 @@ body{
 h1{
     width: min(40vh, 60%);
     font-size: min(4vh, 6vw);
-    margin-top: 2vh;
+    margin-top: 1vh;
     text-align: center;
     border-radius: 1vh;
     background-color: white;
 }
 
-#container{
+.centred{
     display: flex;
-    align-items: center;
-    flex-direction: column;
+    justify-content: center;
+}
+
+#container{
     background-image: linear-gradient(aqua, blue);
 }
 #mazeCanvas{
-    margin: 2vh;
+    margin: 1vh;
     width: min(80vh, 90%);
+    background-color: rgba(255, 255, 255, 0.2);
 }
-/*#seabed{
-    background-image: none;
-}*/
+#surface{
+    height: 20px;
+    background-color: aqua;
+    background-image: url("../images/waves.png");
+    background-repeat: repeat-x;
+}
+#seabed{
+    height: 22px;
+    background-color: blue;
+    background-image: url("../images/seabed.png");
+    background-repeat: repeat-x;
+}

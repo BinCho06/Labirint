@@ -10,6 +10,7 @@ var maze = [];
 var rootIndex = 0, playerIndex = 15;
 var gameInterval, mazeInterval;
 var moveDown, moveUp, moveLeft, moveRight;
+var previousDirection = {dx: 0, dy: 0};
 let isMouseDown = false;
 
 class Node {
@@ -73,10 +74,14 @@ function randomRootShift() {
     let currentX = currentRoot.x;
     let currentY = currentRoot.y;
     do{
-        const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+        var randomDirection = directions[Math.floor(Math.random() * directions.length)];
         var newX = currentX + randomDirection.dx;
         var newY = currentY + randomDirection.dy;
-    } while(!(newX >= 0 && newX < cols && newY >= 0 && newY < rows));
+    } while (
+        (newX < 0 || newX >= cols || newY < 0 || newY >= rows) ||
+        (randomDirection.dx === -previousDirection.dx && randomDirection.dy === -previousDirection.dy)
+    );
+    previousDirection = randomDirection;
 
     const newRoot = maze[newY * cols + newX];
 
@@ -223,7 +228,7 @@ function drawBorder() {
 
     ctx.moveTo(0, 0);
     ctx.lineTo(canvas.width/2, 0);
-    ctx.moveTo(canvas.width/2+20, 0);
+    ctx.moveTo(canvas.width/2+cellSize, 0);
     ctx.lineTo(canvas.width, 0);
 
     ctx.moveTo(canvas.width, 0);
@@ -231,16 +236,16 @@ function drawBorder() {
 
     ctx.moveTo(0, canvas.height);
     ctx.lineTo(canvas.width/2, canvas.height);
-    ctx.moveTo(canvas.width/2+20, canvas.height);
+    ctx.moveTo(canvas.width/2+cellSize, canvas.height);
     ctx.lineTo(canvas.width, canvas.height);
 
     ctx.strokeStyle = "black";
-    ctx.lineWidth = 4;
+    ctx.lineWidth = 6;
     ctx.stroke();
 }
 
 function drawMaze() {
-    ctx.clearRect(2, 2, canvas.width-4, canvas.height-4);
+    ctx.clearRect(3, 3, canvas.width-6, canvas.height-6);
     ctx.beginPath();
 
     maze.forEach(node => {
@@ -268,20 +273,20 @@ function drawMaze() {
     });
 
     ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
     ctx.lineCap = "round";
     ctx.stroke();
 }
 
 function drawRoot() {
     ctx.beginPath();
-    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.27*cellSize, 0, 2 * Math.PI);
+    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.3*cellSize, 0, 2 * Math.PI);
     ctx.strokeStyle = "white";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 1.4;
     ctx.stroke();
 
     ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.2*cellSize, 0, 2 * Math.PI);
-    ctx.fillStyle = "#b8eaf2";
+    ctx.fillStyle = "rgba(250, 250, 255, 0.3)";
     ctx.fill();
 
     ctx.beginPath();
