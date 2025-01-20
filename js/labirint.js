@@ -218,7 +218,6 @@ function resetGame() {
 
 function drawBorder() {
     ctx.beginPath();
-
     ctx.moveTo(0, 0);
     ctx.lineTo(0, canvas.height);
 
@@ -276,22 +275,28 @@ function drawMaze() {
 
 function drawRoot() {
     ctx.beginPath();
+    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.27*cellSize, 0, 2 * Math.PI);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    ctx.stroke();
 
-    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.3*cellSize, 0, 2 * Math.PI);
+    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.2*cellSize, 0, 2 * Math.PI);
+    ctx.fillStyle = "#b8eaf2";
+    ctx.fill();
 
-    ctx.strokeStyle = "red";
-    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.15*cellSize, -Math.PI/2, 0);
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 1;
     ctx.stroke();
 }
 
 function drawPlayer() {
+    //TODO
     ctx.beginPath();
-
     ctx.arc(maze[playerIndex].x*cellSize + cellSize/2, maze[playerIndex].y*cellSize + cellSize/2, 0.4*cellSize, 0, 2 * Math.PI);
-
-    ctx.fillStyle = "blue";             
-    ctx.fill();                        
-    ctx.closePath();
+    ctx.fillStyle = "blue";
+    ctx.fill();
 }
 
 function drawSolution() {
@@ -306,7 +311,7 @@ function drawSolution() {
         node = node.parent;
     }
 
-    ctx.strokeStyle = "red";
+    ctx.strokeStyle = "white";
     ctx.lineWidth = 4;
     ctx.stroke();
 }

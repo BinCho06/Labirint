@@ -11,15 +11,19 @@ h1{
     margin-top: 2vh;
     text-align: center;
     border-radius: 1vh;
-    background-color: aqua;
+    background-color: white;
 }
 
 #container{
     display: flex;
     align-items: center;
     flex-direction: column;
+    background-image: linear-gradient(aqua, blue);
 }
 #mazeCanvas{
     margin: 2vh;
     width: min(80vh, 90%);
 }
+/*#seabed{
+    background-image: none;
+}*/
