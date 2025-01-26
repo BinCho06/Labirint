@@ -28,14 +28,14 @@ h1{
     background-color: rgba(255, 255, 255, 0.2);
 }
 #surface{
-    height: 20px;
+    height: 0.16in;
     background-color: aqua;
-    background-image: url("../images/waves.png");
+    background-image: url("../images/waves.svg");
     background-repeat: repeat-x;
 }
 #seabed{
-    height: 22px;
+    height: 0.25in;
     background-color: blue;
-    background-image: url("../images/seabed.png");
+    background-image: url("../images/seabed.svg");
     background-repeat: repeat-x;
 }

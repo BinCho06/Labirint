@@ -8,6 +8,7 @@ let solutionShown = false;
 
 var maze = [];
 var rootIndex = 0, playerIndex = 15;
+var gameSpeed = 400;
 var gameInterval, mazeInterval;
 var moveDown, moveUp, moveLeft, moveRight;
 var previousDirection = {dx: 0, dy: 0};
@@ -105,15 +106,6 @@ function switchRoot(oldRoot, newRoot) {
     rootIndex = newRoot.y*cols + newRoot.x;
 }
 
-function drawMazeUpdate() {
-    randomRootShift();
-    drawMaze();
-    drawRoot();
-    if(gameInterval){
-        drawPlayer();
-    }
-}
-
 function generateInstantly(repetitions) {
     let i=0;
     while (i<repetitions) {
@@ -123,49 +115,23 @@ function generateInstantly(repetitions) {
     drawMaze();
 }
 
-function startGeneration() {
-    solutionShown=false;
-    drawMazeUpdate()
-
-    let speed = Math.pow(document.getElementById("rangeInput").value, 2);
-    mazeInterval = setInterval(drawMazeUpdate, 1000/speed);
-
-    //temp
-    document.getElementById("start").disabled = true;
-    document.getElementById("stop").disabled = false;
-    document.getElementById('solution').disabled = true;
-    document.getElementById('rangeInput').disabled = true;
-}
-
-function stopGeneration() {
-    clearInterval(mazeInterval);
-    mazeInterval = null;
-    drawMaze();
-
-    //temp
-    document.getElementById("start").disabled = false;
-    document.getElementById("stop").disabled = true;
-    document.getElementById('solution').disabled = false;
-    document.getElementById('rangeInput').disabled = false;
-}
-
 function toggleSolution(){
-    drawMaze();
-    if(!solutionShown) {
-        drawSolution();
-    }
     solutionShown = !solutionShown;
 }
 
 function startGame() {
-    gameInterval = setInterval(gameUpdate, 100);
+    gameInterval = setInterval(gameUpdate, gameSpeed);
     document.getElementById("game").disabled = true;
 }
 
 function gameUpdate() {
+    randomRootShift();
     movePlayer();
 
     drawMaze();
+    if(solutionShown) {
+        drawSolution();
+    }
     drawRoot();
     drawPlayer();
     
@@ -175,7 +141,6 @@ function gameUpdate() {
 function movePlayer() {
     let path = getPaths(maze[playerIndex]);
 
-    console.log(path);
     if(moveUp && path[2]){
         playerIndex -= cols;
     } else if(moveRight && path[1]){
@@ -185,6 +150,7 @@ function movePlayer() {
     } else if(moveLeft && path[-1]){
         playerIndex -= 1;
     }
+    moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 }
 
 function getPaths(node) {
@@ -214,11 +180,12 @@ function resetGame() {
     clearInterval(gameInterval);
     generateInstantly(50000);
 
+    solutionShown = false;
     playerIndex = 15;
     moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 
     drawPlayer();
-    gameInterval = setInterval(gameUpdate, 100);
+    gameInterval = setInterval(gameUpdate, gameSpeed);
 }
 
 function drawBorder() {
@@ -307,18 +274,20 @@ function drawPlayer() {
 function drawSolution() {
     ctx.beginPath();
 
+    let temp=rootIndex;
     setRoot(15, 29);
-
+    
     let node = maze[15] // maze[y * cols + x]
     while(node.parent !== null){
         ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
         ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2)
         node = node.parent;
     }
-
     ctx.strokeStyle = "white";
     ctx.lineWidth = 4;
     ctx.stroke();
+
+    setRoot(temp%cols, Math.floor(temp / cols));
 }
 
 function drawUpdate() {
@@ -327,7 +296,6 @@ function drawUpdate() {
     if(gameInterval){
         drawPlayer();
     }
-    solutionShown = false;
 }
 
 /*
@@ -395,7 +363,7 @@ document.onkeydown = function(e) {
             break;
     }
 };
-
+/*
 document.onkeyup = function(e) {
     switch (e.keyCode) {
         case 37:
@@ -424,3 +392,4 @@ document.onkeyup = function(e) {
             break;
     }
 };
+*/
