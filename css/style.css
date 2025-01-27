@@ -28,10 +28,12 @@ h1{
     background-color: rgba(255, 255, 255, 0.2);
 }
 #surface{
+    position: relative;
     height: 0.16in;
     background-color: aqua;
     background-image: url("../images/waves.svg");
     background-repeat: repeat-x;
+    /*animation: waves 2s linear 1s infinite alternate;*/
 }
 #seabed{
     height: 0.25in;
@@ -39,3 +41,12 @@ h1{
     background-image: url("../images/seabed.svg");
     background-repeat: repeat-x;
 }
+/*
+@keyframes waves {
+    0%{left:0px; top:0px;}
+    20%{left:-4px; top:8px;}
+    40%{left:1px; top:4px;}
+    60%{left:-3px; top:1px;}
+    80%{left:2px; top:6px;}
+    100%{left:-1px; top:2px;}
+}*/

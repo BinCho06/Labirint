@@ -8,7 +8,7 @@ let solutionShown = false;
 
 var maze = [];
 var rootIndex = 0, playerIndex = 15;
-var gameSpeed = 400;
+var gameSpeed = 400, frame=1;
 var gameInterval, mazeInterval;
 var moveDown, moveUp, moveLeft, moveRight;
 var previousDirection = {dx: 0, dy: 0};
@@ -86,6 +86,7 @@ function randomRootShift() {
 
     const newRoot = maze[newY * cols + newX];
 
+    animation = setInterval(animateRoot(previousDirection), 10)
     switchRoot(currentRoot, newRoot)
 }
 
@@ -132,7 +133,8 @@ function gameUpdate() {
     if(solutionShown) {
         drawSolution();
     }
-    drawRoot();
+    //animateRoot();
+    //drawRoot();
     drawPlayer();
     
     checkWin();
@@ -245,23 +247,41 @@ function drawMaze() {
     ctx.stroke();
 }
 
+/*function animateRoot(){
+    frame=1;
+    animation = setInterval(drawRoot, 10);
+}
+
 function drawRoot() {
+    ctx.clearRect(maze[rootIndex].x*cellSize+3, maze[rootIndex].y*cellSize+3, cellSize-6, cellSize-6);
+
+    let x = maze[rootIndex].x*cellSize + cellSize/2 + previousDirection.dx*frame;
+    let y = maze[rootIndex].y*cellSize + cellSize/2 + previousDirection.dy*frame;
+
     ctx.beginPath();
-    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.3*cellSize, 0, 2 * Math.PI);
+    ctx.arc(x, y, 0.3*cellSize, 0, 2 * Math.PI);
     ctx.strokeStyle = "white";
     ctx.lineWidth = 1.4;
     ctx.stroke();
 
-    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.2*cellSize, 0, 2 * Math.PI);
+    ctx.arc(x, y, 0.2*cellSize, 0, 2 * Math.PI);
     ctx.fillStyle = "rgba(250, 250, 255, 0.3)";
     ctx.fill();
 
     ctx.beginPath();
-    ctx.arc(maze[rootIndex].x*cellSize + cellSize/2, maze[rootIndex].y*cellSize + cellSize/2, 0.15*cellSize, -Math.PI/2, 0);
+    ctx.arc(x, y, 0.15*cellSize, -Math.PI/2, 0);
     ctx.strokeStyle = "white";
     ctx.lineWidth = 1;
     ctx.stroke();
-}
+
+    console.log(frame);
+    if(frame >= 10){
+        clearInterval(animation);
+        animation=null;
+        console.log("konc");
+    }
+    frame++;
+}*/
 
 function drawPlayer() {
     //TODO
@@ -288,14 +308,6 @@ function drawSolution() {
     ctx.stroke();
 
     setRoot(temp%cols, Math.floor(temp / cols));
-}
-
-function drawUpdate() {
-    drawMaze();
-    drawRoot();
-    if(gameInterval){
-        drawPlayer();
-    }
 }
 
 /*
