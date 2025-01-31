@@ -86,7 +86,7 @@ function randomRootShift() {
 
     const newRoot = maze[newY * cols + newX];
 
-    animation = setInterval(animateRoot(previousDirection), 10)
+    //animation = setInterval(animateRoot(previousDirection), 10)
     switchRoot(currentRoot, newRoot)
 }
 
