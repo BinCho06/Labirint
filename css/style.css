@@ -4,11 +4,14 @@
 }
 body{
     font-family: 'Comic sans MS';
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 h1{
-    width: min(40vh, 60%);
-    font-size: min(4vh, 6vw);
-    margin-top: 1vh;
+    font-size: min(4vh, 10vw);
+    line-height: 5vh;
+    margin: 0.5vh 0;
     text-align: center;
     border-radius: 1vh;
     background-color: white;
@@ -17,14 +20,17 @@ h1{
 .centred{
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
-#container{
+#mazeContainer{
+    flex: 1;
     background-image: linear-gradient(aqua, blue);
 }
 #mazeCanvas{
     margin: 1vh;
-    width: min(80vh, 90%);
+    width: min(70vh, 90%);
+    height: fit-content;
     background-color: rgba(255, 255, 255, 0.2);
 }
 #surface{
@@ -33,7 +39,7 @@ h1{
     background-color: aqua;
     background-image: url("../images/waves.svg");
     background-repeat: repeat-x;
-    /*animation: waves 2s linear 1s infinite alternate;*/
+    animation: waves 2s linear 1s infinite alternate;
 }
 #seabed{
     height: 0.25in;
@@ -41,12 +47,12 @@ h1{
     background-image: url("../images/seabed.svg");
     background-repeat: repeat-x;
 }
-/*
+
 @keyframes waves {
     0%{left:0px; top:0px;}
-    20%{left:-4px; top:8px;}
-    40%{left:1px; top:4px;}
-    60%{left:-3px; top:1px;}
-    80%{left:2px; top:6px;}
-    100%{left:-1px; top:2px;}
-}*/
+    20%{left:-4px; top:1px;}
+    40%{left:0px; top:2px;}
+    60%{left:-3px; top:0px;}
+    80%{left:0px; top:2px;}
+    100%{left:-1px; top:1px;}
+}

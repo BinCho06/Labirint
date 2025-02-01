@@ -4,15 +4,20 @@ const rows = 30;
 const cellSize = Math.floor(canvas.width / rows);
 const cols = Math.floor(canvas.height / cellSize);
 
-let solutionShown = false;
-
 var maze = [];
-var rootIndex = 0, playerIndex = 15;
-var gameSpeed = 400, frame=1;
+var rootIndex = 0, playerIndex = 29*cols + 15;
+var previousDirection = {dx: 0, dy: 0}, playerDir = {dx: 0, dy: 0};
+var oldRoot, oldPlayer;
+
+var gameSpeed = 200;
 var gameInterval, mazeInterval;
-var moveDown, moveUp, moveLeft, moveRight;
-var previousDirection = {dx: 0, dy: 0};
-let isMouseDown = false;
+
+var moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
+var hints=0;
+
+// TODO refractor/cleanup
+var frame=1, animation;
+var playerFrame=1, playerAnimation;
 
 class Node {
     constructor(parentNode, x, y) {
@@ -29,6 +34,9 @@ function init() {
     initializeMaze();
     drawBorder();
     generateInstantly(50000);
+
+    oldPlayer=maze[playerIndex]
+    gameInterval = setInterval(gameUpdate, gameSpeed);
 }
 
 function initializeMaze() {
@@ -71,13 +79,13 @@ function randomRootShift() {
         { dx: 1, dy: 0 }   // Right
     ];
 
-    let currentRoot = maze[rootIndex];
-    let currentX = currentRoot.x;
-    let currentY = currentRoot.y;
+    oldRoot = maze[rootIndex];
+    let x = oldRoot.x;
+    let y = oldRoot.y;
     do{
         var randomDirection = directions[Math.floor(Math.random() * directions.length)];
-        var newX = currentX + randomDirection.dx;
-        var newY = currentY + randomDirection.dy;
+        var newX = x + randomDirection.dx;
+        var newY = y + randomDirection.dy;
     } while (
         (newX < 0 || newX >= cols || newY < 0 || newY >= rows) ||
         (randomDirection.dx === -previousDirection.dx && randomDirection.dy === -previousDirection.dy)
@@ -86,8 +94,7 @@ function randomRootShift() {
 
     const newRoot = maze[newY * cols + newX];
 
-    //animation = setInterval(animateRoot(previousDirection), 10)
-    switchRoot(currentRoot, newRoot)
+    switchRoot(oldRoot, newRoot)
 }
 
 function switchRoot(oldRoot, newRoot) {
@@ -116,48 +123,70 @@ function generateInstantly(repetitions) {
     drawMaze();
 }
 
-function toggleSolution(){
-    solutionShown = !solutionShown;
-}
-
-function startGame() {
-    gameInterval = setInterval(gameUpdate, gameSpeed);
-    document.getElementById("game").disabled = true;
-}
-
 function gameUpdate() {
     randomRootShift();
-    movePlayer();
+    //movePlayer();
 
     drawMaze();
-    if(solutionShown) {
-        drawSolution();
-    }
-    //animateRoot();
+    drawSolution();
+
+    animateRoot();
     //drawRoot();
     drawPlayer();
     
     checkWin();
 }
 
-function movePlayer() {
-    let path = getPaths(maze[playerIndex]);
+function movePlayer(key) {
+    if(playerAnimation) return;
+    switch (key) {
+        case "w": case "W": case "ArrowUp":
+            moveUp = true;
+            break;
+        case "s": case "S": case "ArrowDown":
+            moveDown = true;
+            break;
+        case "a": case "A": case "ArrowLeft":
+            moveLeft = true;
+            break;
+        case "d": case "D": case "ArrowRight":
+            moveRight = true;
+            break;
+        default:
+            return;
+    }
+
+    oldPlayer=maze[playerIndex]
+    let path = getPaths(oldPlayer);
 
     if(moveUp && path[2]){
         playerIndex -= cols;
+        playerDir = { dx: 0, dy: -1 }
     } else if(moveRight && path[1]){
         playerIndex += 1;
+        playerDir = { dx: 1, dy: 0 }
     } else if(moveDown && path[-2]){
         playerIndex += cols;
+        playerDir = { dx: 0, dy: 1 }
     } else if(moveLeft && path[-1]){
         playerIndex -= 1;
+        playerDir = { dx: -1, dy: 0 }
+    } else{
+        playerDir = { dx: 0, dy: 0 }
+        return;
     }
+
     moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
+    playerFrame = 1;
+    playerAnimation = requestAnimationFrame(drawPlayer);
 }
 
 function getPaths(node) {
     let path = []
 
+    /* Array[1, 2, -2, -1] values are individualy set to true 
+     * based on the direction of the node connection
+    */
     if(node.parent){
         path[node.parent.x - node.x] = true;
         path[2*(node.y - node.parent.y)] = true;
@@ -171,7 +200,7 @@ function getPaths(node) {
 }
 
 function checkWin() {
-    if(playerIndex === 29*cols + 15){
+    if(playerIndex === 15){
         alert('You win!');
         resetGame();
         // TODO
@@ -182,8 +211,8 @@ function resetGame() {
     clearInterval(gameInterval);
     generateInstantly(50000);
 
-    solutionShown = false;
-    playerIndex = 15;
+    oldPlayer=maze[playerIndex]
+    playerIndex = 29*cols + 15;
     moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 
     drawPlayer();
@@ -247,16 +276,17 @@ function drawMaze() {
     ctx.stroke();
 }
 
-/*function animateRoot(){
-    frame=1;
-    animation = setInterval(drawRoot, 10);
+function animateRoot(){
+    if (animation) return;
+    frame = 1;
+    animation = requestAnimationFrame(drawRoot);
 }
 
 function drawRoot() {
-    ctx.clearRect(maze[rootIndex].x*cellSize+3, maze[rootIndex].y*cellSize+3, cellSize-6, cellSize-6);
+    ctx.clearRect(oldRoot.x*cellSize+3 + previousDirection.dx*frame, oldRoot.y*cellSize+3 + previousDirection.dy*frame, cellSize-6, cellSize-6);
 
-    let x = maze[rootIndex].x*cellSize + cellSize/2 + previousDirection.dx*frame;
-    let y = maze[rootIndex].y*cellSize + cellSize/2 + previousDirection.dy*frame;
+    let x = oldRoot.x*cellSize + cellSize/2 + previousDirection.dx*frame;
+    let y = oldRoot.y*cellSize + cellSize/2 + previousDirection.dy*frame;
 
     ctx.beginPath();
     ctx.arc(x, y, 0.3*cellSize, 0, 2 * Math.PI);
@@ -274,34 +304,47 @@ function drawRoot() {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    console.log(frame);
-    if(frame >= 10){
-        clearInterval(animation);
-        animation=null;
-        console.log("konc");
+    if (frame >= cellSize) {
+        animation = null;
+    } else {
+        frame++;
+        animation = setTimeout(drawRoot, 2);
     }
-    frame++;
-}*/
+}
 
 function drawPlayer() {
-    //TODO
+    ctx.clearRect(oldPlayer.x*cellSize+3 + playerDir.dx*playerFrame, oldPlayer.y*cellSize+3 + playerDir.dy*playerFrame, cellSize-6, cellSize-6);
+
+    let x = oldPlayer.x*cellSize + cellSize/2 + playerDir.dx*playerFrame;
+    let y = oldPlayer.y*cellSize + cellSize/2 + playerDir.dy*playerFrame;
+
     ctx.beginPath();
-    ctx.arc(maze[playerIndex].x*cellSize + cellSize/2, maze[playerIndex].y*cellSize + cellSize/2, 0.4*cellSize, 0, 2 * Math.PI);
+    ctx.arc(x, y, 0.4*cellSize, 0, 2 * Math.PI);
     ctx.fillStyle = "blue";
     ctx.fill();
+
+    if (playerFrame >= cellSize) {
+        playerAnimation = null;
+        frame=1;
+    } else {
+        playerFrame++;
+        playerAnimation = setTimeout(drawPlayer, 2);
+    }
 }
 
 function drawSolution() {
     ctx.beginPath();
 
     let temp=rootIndex;
-    setRoot(15, 29);
+    setRoot(15, 0);
     
-    let node = maze[15] // maze[y * cols + x]
-    while(node.parent !== null){
+    let pathLen=0;
+    let node = maze[29*cols + 15] // maze[y * cols + x]
+    while(node.parent !== null && pathLen < hints*10){
         ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
         ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2)
         node = node.parent;
+        pathLen++;
     }
     ctx.strokeStyle = "white";
     ctx.lineWidth = 4;
@@ -310,98 +353,10 @@ function drawSolution() {
     setRoot(temp%cols, Math.floor(temp / cols));
 }
 
-/*
-canvas.addEventListener('mousedown', (event) => {
-    if(mazeInterval != null) return;
-    isMouseDown = true;
-
-    const rect = canvas.getBoundingClientRect();
-    const x = Math.max(0, Math.floor((event.clientX - rect.left)/cellSize));
-    const y = Math.max(0, Math.floor((event.clientY - rect.top)/cellSize));
-    setRoot(x, y);
-    drawUpdate();
-});
-
-document.addEventListener('mouseup', (event) => {
-    isMouseDown = false;
-    drawMaze();
-});
-
-canvas.addEventListener('mousemove', (event) => {
-    if(isMouseDown) {
-        const rect = canvas.getBoundingClientRect();
-        const x = Math.max(0, Math.floor((event.clientX - rect.left)/cellSize));
-        const y = Math.max(0, Math.floor((event.clientY - rect.top)/cellSize));
-        const clickIndex = y*cols + x;
-
-        let ouOfReach = Math.abs(maze[clickIndex].x - maze[rootIndex].x) + Math.abs(maze[clickIndex].y - maze[rootIndex].y) > 1;
-        let cellChanged = clickIndex !== rootIndex;
-        if(ouOfReach){
-            setRoot(x, y);
-            drawUpdate();
-        } else if(cellChanged){
-            switchRoot(maze[rootIndex], maze[clickIndex]);
-            drawUpdate();
-        }
+document.addEventListener("keydown", function(event) {
+    if(event.key === "t" || event.key === "T"){
+        hints++;
+    }else{
+        movePlayer(event.key);
     }
 });
-*/
-
-document.onkeydown = function(e) {
-    switch (e.keyCode) {
-        case 37:
-            moveLeft=true;
-            break;
-        case 65:
-            moveLeft=true;
-            break;
-        case 38:
-            moveUp=true;
-            break;
-        case 87:
-            moveUp=true;
-            break;
-        case 39:
-            moveRight=true;
-            break;
-        case 68:
-            moveRight=true;
-            break;
-        case 40:
-            moveDown=true;
-            break;
-        case 83:
-            moveDown=true;
-            break;
-    }
-};
-/*
-document.onkeyup = function(e) {
-    switch (e.keyCode) {
-        case 37:
-            moveLeft=false;
-            break;
-        case 65:
-            moveLeft=false;
-            break;
-        case 38:
-            moveUp=false;
-            break;
-        case 87:
-            moveUp=false;
-            break;
-        case 39:
-            moveRight=false;
-            break;
-        case 68:
-            moveRight=false;
-            break;
-        case 40:
-            moveDown=false;
-            break;
-        case 83:
-            moveDown=false;
-            break;
-    }
-};
-*/
