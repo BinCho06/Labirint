@@ -9,7 +9,7 @@ var rootIndex = 0, playerIndex = 29*cols + 15;
 var previousDirection = {dx: 0, dy: 0}, playerDir = {dx: 0, dy: 0};
 var oldRoot, oldPlayer;
 
-var gameSpeed = 200;
+var gameSpeed = 400;
 var gameInterval, mazeInterval;
 
 var moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
@@ -72,6 +72,7 @@ function recursiveRootSwitch(node){
 }
 
 function randomRootShift() {
+    if(rootIndex == null) return;
     const directions = [
         { dx: 0, dy: -1 }, // Up
         { dx: 0, dy: 1 },  // Down
@@ -125,16 +126,14 @@ function generateInstantly(repetitions) {
 
 function gameUpdate() {
     randomRootShift();
-    //movePlayer();
 
     drawMaze();
     drawSolution();
 
     animateRoot();
-    //drawRoot();
     drawPlayer();
     
-    checkWin();
+    checkPosition();
 }
 
 function movePlayer(key) {
@@ -199,11 +198,14 @@ function getPaths(node) {
     return path;
 }
 
-function checkWin() {
+function checkPosition() {
     if(playerIndex === 15){
         alert('You win!');
         resetGame();
         // TODO
+    }
+    if(playerIndex == rootIndex || (playerIndex == oldRoot.y*cols + oldRoot.x && frame<cellSize*0.8)){
+        rootIndex = null;
     }
 }
 
@@ -277,7 +279,7 @@ function drawMaze() {
 }
 
 function animateRoot(){
-    if (animation) return;
+    if (animation || rootIndex == null) return;
     frame = 1;
     animation = requestAnimationFrame(drawRoot);
 }
@@ -304,7 +306,7 @@ function drawRoot() {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    if (frame >= cellSize) {
+    if (frame >= cellSize || rootIndex == null) {
         animation = null;
     } else {
         frame++;
@@ -319,13 +321,12 @@ function drawPlayer() {
     let y = oldPlayer.y*cellSize + cellSize/2 + playerDir.dy*playerFrame;
 
     ctx.beginPath();
-    ctx.arc(x, y, 0.4*cellSize, 0, 2 * Math.PI);
+    ctx.arc(x, y, 0.35*cellSize, 0, 2 * Math.PI);
     ctx.fillStyle = "blue";
     ctx.fill();
 
     if (playerFrame >= cellSize) {
         playerAnimation = null;
-        frame=1;
     } else {
         playerFrame++;
         playerAnimation = setTimeout(drawPlayer, 2);
@@ -350,7 +351,11 @@ function drawSolution() {
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    setRoot(temp%cols, Math.floor(temp / cols));
+    if(temp != null) {
+        setRoot(temp%cols, Math.floor(temp / cols));
+    } else {
+        rootIndex=null;
+    }
 }
 
 document.addEventListener("keydown", function(event) {
