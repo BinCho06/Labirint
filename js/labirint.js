@@ -9,8 +9,9 @@ var rootIndex = 0, playerIndex = 29*cols + 15;
 var previousDirection = {dx: 0, dy: 0}, playerDir = {dx: 0, dy: 0};
 var oldRoot, oldPlayer;
 
+var time = 90;
 var gameSpeed = 400;
-var gameInterval, mazeInterval;
+var gameInterval;
 
 var moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 var hints=0;
@@ -132,8 +133,18 @@ function gameUpdate() {
 
     animateRoot();
     drawPlayer();
-    
+    updateTime();
+
     checkPosition();
+}
+
+function updateTime(){
+    time-=0.4;
+    if(time<1){
+        alert('You lose!');
+        resetGame();
+    }
+    document.getElementById("time").innerHTML = "Time left: "+Math.floor(time/60)+":"+Math.floor(time)%60;
 }
 
 function movePlayer(key) {
@@ -206,6 +217,8 @@ function checkPosition() {
     }
     if(playerIndex == rootIndex || (playerIndex == oldRoot.y*cols + oldRoot.x && frame<cellSize*0.8)){
         rootIndex = null;
+        oldRoot=null;
+        time=time+10;
     }
 }
 
@@ -213,7 +226,8 @@ function resetGame() {
     clearInterval(gameInterval);
     generateInstantly(50000);
 
-    oldPlayer=maze[playerIndex]
+    time = 90;
+    oldPlayer=maze[playerIndex];
     playerIndex = 29*cols + 15;
     moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 
@@ -306,30 +320,31 @@ function drawRoot() {
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    if (frame >= cellSize || rootIndex == null) {
+    frame+=2;
+    if (frame > cellSize || rootIndex == null) {
         animation = null;
     } else {
-        frame++;
-        animation = setTimeout(drawRoot, 2);
+        animation = requestAnimationFrame(drawRoot);
     }
 }
 
 function drawPlayer() {
+    if(playerFrame > cellSize) playerFrame=cellSize;
     ctx.clearRect(oldPlayer.x*cellSize+3 + playerDir.dx*playerFrame, oldPlayer.y*cellSize+3 + playerDir.dy*playerFrame, cellSize-6, cellSize-6);
 
     let x = oldPlayer.x*cellSize + cellSize/2 + playerDir.dx*playerFrame;
     let y = oldPlayer.y*cellSize + cellSize/2 + playerDir.dy*playerFrame;
 
     ctx.beginPath();
-    ctx.arc(x, y, 0.35*cellSize, 0, 2 * Math.PI);
-    ctx.fillStyle = "blue";
+    ctx.arc(x, y, 0.30*cellSize, 0, 2 * Math.PI);
+    ctx.fillStyle = "red";
     ctx.fill();
 
     if (playerFrame >= cellSize) {
         playerAnimation = null;
     } else {
-        playerFrame++;
-        playerAnimation = setTimeout(drawPlayer, 2);
+        playerFrame+=3;
+        playerAnimation = requestAnimationFrame(drawPlayer);
     }
 }
 
@@ -359,8 +374,9 @@ function drawSolution() {
 }
 
 document.addEventListener("keydown", function(event) {
-    if(event.key === "t" || event.key === "T"){
+    if(event.key === "t" || event.key === "T" && hints<maxHints){
         hints++;
+        document.getElementById("hints").innerHTML = "Hints used: "+hints;
     }else{
         movePlayer(event.key);
     }

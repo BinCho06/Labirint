@@ -5,6 +5,7 @@
 body{
     font-family: 'Comic sans MS';
     height: 100vh;
+    overflow-x: hidden;
     display: flex;
     flex-direction: column;
 }
@@ -13,8 +14,9 @@ h1{
     line-height: 5vh;
     margin: 0.5vh 0;
     text-align: center;
-    border-radius: 1vh;
-    background-color: white;
+}
+p{
+    font-size: min(3vh, 6vw);
 }
 
 .centred{
@@ -25,17 +27,29 @@ h1{
 
 #mazeContainer{
     flex: 1;
+    flex-direction: column;
     background-image: linear-gradient(aqua, blue);
+}
+#mazeContainer div{
+    width: min(70vh, 94%);
+    margin-top: 1vh;
+}
+#time{
+    float: left;
+}
+#hints{
+    float: right;
 }
 #mazeCanvas{
     margin: 1vh;
-    width: min(70vh, 90%);
+    width: min(70vh, 94%);
     height: fit-content;
     background-color: rgba(255, 255, 255, 0.2);
 }
 #surface{
     position: relative;
     height: 0.16in;
+    width: 110%;
     background-color: aqua;
     background-image: url("../images/waves.svg");
     background-repeat: repeat-x;
@@ -54,5 +68,5 @@ h1{
     40%{left:0px; top:2px;}
     60%{left:-3px; top:0px;}
     80%{left:0px; top:2px;}
-    100%{left:-1px; top:1px;}
+    100%{left:-2px; top:1px;}
 }
