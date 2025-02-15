@@ -148,6 +148,26 @@ function updateTime(){
     }
 }
 
+function useHint(){
+    let temp=rootIndex;
+    setRoot(15, 0);
+    
+    let pathLen=0;
+    let node = maze[playerIndex]
+    while(node.parent !== null){
+        node = node.parent;
+        pathLen++;
+    }
+    if(temp != null) setRoot(temp%cols, Math.floor(temp / cols));
+    else rootIndex=null;
+
+    if(pathLen < 10*hints) return
+    hints++;
+    document.getElementById("hints").innerHTML = "Hints used: "+hints;
+    time -= 5 - gameSpeed/1000;
+    updateTime();
+}
+
 function movePlayer(key) {
     if(playerAnimation) return;
     switch (key) {
@@ -227,9 +247,11 @@ function resetGame() {
     clearInterval(gameInterval);
     generateInstantly(50000);
 
+    hints = 0;
     time = 90;
-    oldPlayer=maze[playerIndex];
     playerIndex = 29*cols + 15;
+    oldPlayer=maze[playerIndex];
+    playerDir = {dx: 0, dy: 0}
     moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 
     drawPlayer();
@@ -356,7 +378,7 @@ function drawSolution() {
     setRoot(15, 0);
     
     let pathLen=0;
-    let node = maze[29*cols + 15] // maze[y * cols + x]
+    let node = maze[playerIndex]
     while(node.parent !== null && pathLen < hints*10){
         ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
         ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2)
@@ -376,8 +398,7 @@ function drawSolution() {
 
 document.addEventListener("keydown", function(event) {
     if(event.key === "t" || event.key === "T" && hints<maxHints){
-        hints++;
-        document.getElementById("hints").innerHTML = "Hints used: "+hints;
+        useHint();
     }else{
         movePlayer(event.key);
     }
