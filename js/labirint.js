@@ -9,8 +9,8 @@ var rootIndex = 0, playerIndex = 29*cols + 15;
 var previousDirection = {dx: 0, dy: 0}, playerDir = {dx: 0, dy: 0};
 var oldRoot, oldPlayer;
 
-var time = 90;
-var gameSpeed = 400;
+var time = 91;
+var gameSpeed = 500;
 var gameInterval;
 
 var moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
@@ -35,6 +35,7 @@ function init() {
     initializeMaze();
     drawBorder();
     generateInstantly(50000);
+    updateTime();
 
     oldPlayer=maze[playerIndex]
     gameInterval = setInterval(gameUpdate, gameSpeed);
@@ -139,12 +140,12 @@ function gameUpdate() {
 }
 
 function updateTime(){
-    time-=0.4;
-    if(time<1){
+    time-=gameSpeed/1000;
+    document.getElementById("time").innerHTML = "Time left: " + Math.floor(time / 60) + ":" + String(Math.floor(time) % 60).padStart(2, '0');
+    if(time<0.1){
         alert('You lose!');
         resetGame();
     }
-    document.getElementById("time").innerHTML = "Time left: "+Math.floor(time/60)+":"+Math.floor(time)%60;
 }
 
 function movePlayer(key) {
