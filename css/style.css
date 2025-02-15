@@ -4,8 +4,7 @@
 }
 body{
     font-family: 'Comic sans MS';
-    height: 100vh;
-    overflow-x: hidden;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
 }
@@ -25,14 +24,14 @@ p{
     align-items: center;
 }
 
-#mazeContainer{
+#wrapper{
     flex: 1;
     flex-direction: column;
     background-image: linear-gradient(aqua, blue);
 }
-#mazeContainer div{
-    width: min(70vh, 94%);
-    margin-top: 1vh;
+#content{
+    width: min(70dvh, 94%);
+    margin: 0 auto;
 }
 #time{
     float: left;
@@ -41,32 +40,20 @@ p{
     float: right;
 }
 #mazeCanvas{
-    margin: 1vh;
-    width: min(70vh, 94%);
+    width: 100%;
     height: fit-content;
     background-color: rgba(255, 255, 255, 0.2);
 }
 #surface{
     position: relative;
-    height: 0.16in;
-    width: 110%;
     background-color: aqua;
     background-image: url("../images/waves.svg");
     background-repeat: repeat-x;
-    animation: waves 2s linear 1s infinite alternate;
+    min-height: 0.16in;
 }
 #seabed{
     height: 0.25in;
     background-color: blue;
     background-image: url("../images/seabed.svg");
     background-repeat: repeat-x;
-}
-
-@keyframes waves {
-    0%{left:0px; top:0px;}
-    20%{left:-4px; top:1px;}
-    40%{left:0px; top:2px;}
-    60%{left:-3px; top:0px;}
-    80%{left:0px; top:2px;}
-    100%{left:-2px; top:1px;}
 }
