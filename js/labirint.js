@@ -254,6 +254,7 @@ function resetGame() {
     playerDir = {dx: 0, dy: 0}
     moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 
+    document.getElementById("hints").innerHTML = "Hints used: "+hints;
     drawPlayer();
     gameInterval = setInterval(gameUpdate, gameSpeed);
 }
@@ -377,14 +378,28 @@ function drawSolution() {
     let temp=rootIndex;
     setRoot(15, 0);
     
+    let showLine=false;
     let pathLen=0;
-    let node = maze[playerIndex]
+    let node = maze[29*cols + 15] // maze[y * cols + x]
     while(node.parent !== null && pathLen < hints*10){
-        ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
-        ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2)
+        if(node == maze[playerIndex]) showLine=true;
+        if(showLine){
+            ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
+            ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2);    
+        }
         node = node.parent;
         pathLen++;
     }
+    if(!showLine){ //TODO fix this mess
+        let prevNode=node;
+        node = maze[29*cols + 15];
+        while(node.parent !== null && node != prevNode){
+            ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
+            ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2);
+            node = node.parent;
+        }
+    }
+
     ctx.strokeStyle = "white";
     ctx.lineWidth = 4;
     ctx.stroke();
@@ -397,7 +412,7 @@ function drawSolution() {
 }
 
 document.addEventListener("keydown", function(event) {
-    if(event.key === "t" || event.key === "T" && hints<maxHints){
+    if(event.key === "h" || event.key === "H" && hints<maxHints){
         useHint();
     }else{
         movePlayer(event.key);
