@@ -38,6 +38,7 @@ p{
 }
 #hints{
     float: right;
+    cursor: pointer;
 }
 #mazeCanvas{
     width: 100%;

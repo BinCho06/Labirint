@@ -254,6 +254,7 @@ function resetGame() {
     playerDir = {dx: 0, dy: 0}
     moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 
+    document.getElementById("time").innerHTML = "Time left: " + Math.floor(time / 60) + ":" + String(Math.floor(time) % 60).padStart(2, '0');
     document.getElementById("hints").innerHTML = "Hints used: "+hints;
     drawPlayer();
     gameInterval = setInterval(gameUpdate, gameSpeed);
@@ -378,26 +379,14 @@ function drawSolution() {
     let temp=rootIndex;
     setRoot(15, 0);
     
-    let showLine=false;
     let pathLen=0;
     let node = maze[29*cols + 15] // maze[y * cols + x]
     while(node.parent !== null && pathLen < hints*10){
-        if(node == maze[playerIndex]) showLine=true;
-        if(showLine){
-            ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
-            ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2);    
-        }
+        ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
+        ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2);    
+
         node = node.parent;
         pathLen++;
-    }
-    if(!showLine){ //TODO fix this mess
-        let prevNode=node;
-        node = maze[29*cols + 15];
-        while(node.parent !== null && node != prevNode){
-            ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
-            ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2);
-            node = node.parent;
-        }
     }
 
     ctx.strokeStyle = "white";
