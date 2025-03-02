@@ -23,9 +23,19 @@ p{
     justify-content: center;
     align-items: center;
 }
+.buttoncolor{
+    box-shadow: none !important;
+    background-color: blue;
+    transition: background-color 0.4s;
+}
+.buttoncolor:hover{
+    box-shadow: none !important;
+    background-color: aqua;
+}
 
 #wrapper{
     flex: 1;
+    min-height: calc(94dvh - 0.41in); /*sweetalert fix*/
     flex-direction: column;
     background-image: linear-gradient(aqua, blue);
 }
@@ -57,4 +67,13 @@ p{
     background-color: blue;
     background-image: url("../images/seabed.svg");
     background-repeat: repeat-x;
+}
+#credits{
+    position: absolute;
+    top: 6vh;
+    left: 60px;
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+    z-index: 1;
 }

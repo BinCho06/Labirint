@@ -132,7 +132,7 @@ function gameUpdate() {
     drawMaze();
     drawSolution();
 
-    animateRoot();
+    if(rootIndex) animateRoot();
     drawPlayer();
     updateTime();
 
@@ -143,8 +143,18 @@ function updateTime(){
     time-=gameSpeed/1000;
     document.getElementById("time").innerHTML = "Time left: " + Math.floor(time / 60) + ":" + String(Math.floor(time) % 60).padStart(2, '0');
     if(time<0.1){
-        alert('You lose!');
-        resetGame();
+        Swal.fire({
+            title: 'Izgubil si!',
+            text: 'Zmanjkalo ti je zraka, poskusi ponovno.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'buttoncolor'
+            }
+        }).then(() => {
+            resetGame();
+        });
+        clearInterval(gameInterval);
     }
 }
 
@@ -232,10 +242,20 @@ function getPaths(node) {
 
 function checkPosition() {
     if(playerIndex === 15){
-        alert('You win!');
-        resetGame();
-        // TODO
+        Swal.fire({
+            title: 'Zmagal si!',
+            text: 'Uspešno si pogenil iz labirinta na površje',
+            icon: 'success',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'buttoncolor'
+            }
+        }).then(() => {
+            resetGame();
+        }); //TODO localstorage
+        clearInterval(gameInterval);
     }
+    if(!rootIndex) return;
     if(playerIndex == rootIndex || (playerIndex == oldRoot.y*cols + oldRoot.x && frame<cellSize*0.8)){
         rootIndex = null;
         oldRoot=null;
@@ -245,6 +265,7 @@ function checkPosition() {
 
 function resetGame() {
     clearInterval(gameInterval);
+    if(!rootIndex) rootIndex=0;
     generateInstantly(50000);
 
     hints = 0;
@@ -407,3 +428,15 @@ document.addEventListener("keydown", function(event) {
         movePlayer(event.key);
     }
 });
+
+function credits(){
+    Swal.fire({
+        title: 'Vizitka',
+        text: 'Štefan Koren 4. Rb, 2025',
+        icon: 'info',
+        confirmButtonText: 'OK',
+        customClass: {
+            confirmButton: 'buttoncolor'
+        }
+    })
+}
