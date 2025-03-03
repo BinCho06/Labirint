@@ -25,12 +25,12 @@ p{
 }
 .buttoncolor{
     box-shadow: none !important;
-    background-color: blue;
+    background-color: rgb(0, 150, 255);
     transition: background-color 0.4s;
 }
 .buttoncolor:hover{
     box-shadow: none !important;
-    background-color: aqua;
+    background-color: rgb(0, 225, 255);
 }
 
 #wrapper{

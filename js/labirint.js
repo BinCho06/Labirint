@@ -13,6 +13,7 @@ var time = 91;
 var gameSpeed = 500;
 var gameInterval;
 
+var playerColor = "#ffaaaa";
 var moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 var hints=0;
 
@@ -383,7 +384,9 @@ function drawPlayer() {
 
     ctx.beginPath();
     ctx.arc(x, y, 0.30*cellSize, 0, 2 * Math.PI);
-    ctx.fillStyle = "red";
+    playerColor = "#ff"+Math.floor(time/10)+Math.floor(time%10)+Math.floor(time/10)+Math.floor(time%10);
+    console.log(playerColor);
+    ctx.fillStyle = playerColor;
     ctx.fill();
 
     if (playerFrame >= cellSize) {
