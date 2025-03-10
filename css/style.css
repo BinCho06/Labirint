@@ -77,3 +77,10 @@ p{
     cursor: pointer;
     z-index: 1;
 }
+#diver{
+    position: absolute;
+    bottom: 2vh;
+    left: 45%;
+    width: 140px;
+    height: 100px;
+}

@@ -16,6 +16,7 @@ var gameInterval;
 var playerColor = "#ffaaaa";
 var moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 var hints=0;
+var buffer=false;
 
 // TODO refractor/cleanup
 var frame=1, animation;
@@ -39,7 +40,8 @@ function init() {
     updateTime();
 
     oldPlayer=maze[playerIndex]
-    gameInterval = setInterval(gameUpdate, gameSpeed);
+
+    displayScores();
 }
 
 function initializeMaze() {
@@ -131,7 +133,8 @@ function gameUpdate() {
     randomRootShift();
 
     drawMaze();
-    drawSolution();
+    if(buffer) drawSolution();
+    buffer=false;
 
     if(rootIndex) animateRoot();
     drawPlayer();
@@ -160,23 +163,17 @@ function updateTime(){
 }
 
 function useHint(){
-    let temp=rootIndex;
-    setRoot(15, 0);
-    
-    let pathLen=0;
-    let node = maze[playerIndex]
-    while(node.parent !== null){
-        node = node.parent;
-        pathLen++;
-    }
-    if(temp != null) setRoot(temp%cols, Math.floor(temp / cols));
-    else rootIndex=null;
+    drawSolution();
+    drawPlayer();
+    drawRoot();
 
-    if(pathLen < 10*hints) return
     hints++;
     document.getElementById("hints").innerHTML = "Hints used: "+hints;
-    time -= 5 - gameSpeed/1000;
+
+    time -= 10 - gameSpeed/1000;
     updateTime();
+
+    buffer=true;
 }
 
 function movePlayer(key) {
@@ -243,6 +240,8 @@ function getPaths(node) {
 
 function checkPosition() {
     if(playerIndex === 15){
+        saveScore(90-time, hints);
+
         Swal.fire({
             title: 'Zmagal si!',
             text: 'Uspešno si pogenil iz labirinta na površje',
@@ -253,7 +252,8 @@ function checkPosition() {
             }
         }).then(() => {
             resetGame();
-        }); //TODO localstorage
+        });
+
         clearInterval(gameInterval);
     }
     if(!rootIndex) return;
@@ -403,14 +403,12 @@ function drawSolution() {
     let temp=rootIndex;
     setRoot(15, 0);
     
-    let pathLen=0;
     let node = maze[29*cols + 15] // maze[y * cols + x]
-    while(node.parent !== null && pathLen < hints*10){
+    while(node.parent !== null){
         ctx.moveTo(node.x*cellSize + cellSize/2, node.y*cellSize + cellSize/2);
         ctx.lineTo(node.parent.x*cellSize + cellSize/2, node.parent.y*cellSize + cellSize/2);    
 
         node = node.parent;
-        pathLen++;
     }
 
     ctx.strokeStyle = "white";
@@ -422,6 +420,42 @@ function drawSolution() {
     } else {
         rootIndex=null;
     }
+}
+
+function saveScore(timeTaken, hintsUsed) {
+    const scores = JSON.parse(localStorage.getItem('scores')) || [];
+    scores.push({ timeTaken, hintsUsed });
+    localStorage.setItem('scores', JSON.stringify(scores));
+}
+
+function displayScores() {
+    const scores = JSON.parse(localStorage.getItem('scores')) || [];
+    let scoreText = "";
+    scores.forEach((score, index) => {
+        scoreText += `${index + 1}: Time Taken - ${score.timeTaken}s, Hints Used - ${score.hintsUsed}<br>`;
+    });
+    Swal.fire({
+        title: 'Rezultati',
+        html: scoreText,
+        icon: 'info',
+        confirmButtonText: 'OK',
+        customClass: {
+            confirmButton: 'buttoncolor'
+        }
+    }).then(() => {
+        Swal.fire({
+            title: 'Priplavaj na površje',
+            text: 'V tej igri igraš kot plavalec ki mora priplavati na površje skozi labirint predent ti zmanjka sape/časa. Mehurček ki ti spreminja labirint lahko uničiš in s tem pridobiš več časa za reševanje',
+            icon: 'info',
+            confirmButtonText: 'OK',
+            customClass: {
+                confirmButton: 'buttoncolor'
+            }
+        }).then(() => {
+            gameInterval = setInterval(gameUpdate, gameSpeed);
+        });
+    });
+    
 }
 
 document.addEventListener("keydown", function(event) {
