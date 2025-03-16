@@ -1,19 +1,22 @@
+const diverStyle=document.getElementById("diver").style;
+const canvasStyle = document.getElementById("mazeCanvas").style;
 const canvas = document.getElementById("mazeCanvas");
 const ctx = canvas.getContext("2d");
 const rows = 30;
 const cellSize = Math.floor(canvas.width / rows);
 const cols = Math.floor(canvas.height / cellSize);
+const gameSpeed = 500;
 
 var maze = [];
 var rootIndex = 0, playerIndex = 29*cols + 15;
 var previousDirection = {dx: 0, dy: 0}, playerDir = {dx: 0, dy: 0};
 var oldRoot, oldPlayer;
 
-var time = 91;
-var gameSpeed = 500;
+var time = 90;
 var gameInterval;
-
 var playerColor = "#ffaaaa";
+var rootActive = false;
+
 var moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 var hints=0;
 var buffer=false;
@@ -37,11 +40,8 @@ function init() {
     initializeMaze();
     drawBorder();
     generateInstantly(50000);
-    updateTime();
 
-    oldPlayer=maze[playerIndex]
-
-    displayScores();
+    resetGame();
 }
 
 function initializeMaze() {
@@ -129,14 +129,14 @@ function generateInstantly(repetitions) {
     drawMaze();
 }
 
-function gameUpdate() {
-    randomRootShift();
+function gameUpdate(){
+    if(rootActive) randomRootShift();
 
     drawMaze();
     if(buffer) drawSolution();
     buffer=false;
 
-    if(rootIndex) animateRoot();
+    if(rootActive) animateRoot();
     drawPlayer();
     updateTime();
 
@@ -165,7 +165,7 @@ function updateTime(){
 function useHint(){
     drawSolution();
     drawPlayer();
-    drawRoot();
+    if(rootActive) drawRoot();
 
     hints++;
     document.getElementById("hints").innerHTML = "Hints used: "+hints;
@@ -240,46 +240,98 @@ function getPaths(node) {
 
 function checkPosition() {
     if(playerIndex === 15){
-        saveScore(90-time, hints);
-
-        Swal.fire({
-            title: 'Zmagal si!',
-            text: 'Uspešno si pogenil iz labirinta na površje',
-            icon: 'success',
-            confirmButtonText: 'OK',
-            customClass: {
-                confirmButton: 'buttoncolor'
-            }
-        }).then(() => {
-            resetGame();
-        });
-
         clearInterval(gameInterval);
+        diverEnd();
+        setTimeout(() => {
+            var tempTime= 90 - (time + hints*10);
+            var tempHints=hints;
+            Swal.fire({
+                title: 'Zmagal si!',
+                text: 'Uspešno si pogenil iz labirinta na površje, vnesi svoje ime!',
+                input: 'text',
+                inputPlaceholder: 'Ime',
+                icon: 'success',
+                confirmButtonText: 'Vnesi',
+                customClass: {
+                    confirmButton: 'buttoncolor'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    saveScore(result.value, tempTime, tempHints);
+                    displayScores();
+                    resetGame();
+                }
+            });
+            diverStyle.display = "none";
+            diverStyle.bottom = "2dvh"
+        }, 500);
+
+        
     }
     if(!rootIndex) return;
     if(playerIndex == rootIndex || (playerIndex == oldRoot.y*cols + oldRoot.x && frame<cellSize*0.8)){
-        rootIndex = null;
-        oldRoot=null;
+        rootActive = false;
         time=time+10;
     }
 }
 
 function resetGame() {
     clearInterval(gameInterval);
-    if(!rootIndex) rootIndex=0;
     generateInstantly(50000);
 
-    hints = 0;
-    time = 90;
+    rootActive=true;
+    playerColor = "#ffaaaa";
     playerIndex = 29*cols + 15;
     oldPlayer=maze[playerIndex];
     playerDir = {dx: 0, dy: 0}
     moveDown=false, moveUp=false, moveLeft=false, moveRight=false;
 
+    time = 90;
+    hints = 0;
     document.getElementById("time").innerHTML = "Time left: " + Math.floor(time / 60) + ":" + String(Math.floor(time) % 60).padStart(2, '0');
     document.getElementById("hints").innerHTML = "Hints used: "+hints;
-    drawPlayer();
-    gameInterval = setInterval(gameUpdate, gameSpeed);
+
+    diverStyle.display = "block";
+    canvasStyle.backgroundColor = "rgba(0, 0, 0, 0.2)";
+    canvasStyle.filter = "blur(2vh)";
+    document.getElementById("play").style.display = "block";
+}
+
+function startGame(){
+    canvasStyle.backgroundColor = "rgba(255, 255, 255, 0.2)";
+    canvasStyle.filter = "blur(0vh)";
+    document.getElementById("play").style.display = "none";
+
+    diverStart();
+    setTimeout(() => {
+        gameInterval = setInterval(gameUpdate, gameSpeed);
+    }, 500);
+}
+
+function saveScore(playerName, timeTaken, hintsUsed) {
+    const scores = JSON.parse(localStorage.getItem('scores')) || [];
+    scores.push({ playerName, timeTaken, hintsUsed });
+    localStorage.setItem('scores', JSON.stringify(scores));
+}
+
+function displayScores() {
+    const scores = JSON.parse(localStorage.getItem('scores')) || [];
+    scores.sort((a, b) => a.timeTaken - b.timeTaken);
+
+    let scoreText = "";
+    scores.forEach((score, index) => {
+        scoreText += `${index + 1}. ${score.playerName || "Neznan igralec"}: Time Taken - ${score.timeTaken}s, Hints Used - ${score.hintsUsed}<br>`;
+    });
+
+    Swal.fire({
+        title: 'Rezultati',
+        html: scoreText,
+        icon: 'info',
+        confirmButtonText: 'OK',
+        customClass: {
+            confirmButton: 'buttoncolor'
+        }
+    });
 }
 
 function drawBorder() {
@@ -340,7 +392,7 @@ function drawMaze() {
 }
 
 function animateRoot(){
-    if (animation || rootIndex == null) return;
+    if (animation || !rootActive) return;
     frame = 1;
     animation = requestAnimationFrame(drawRoot);
 }
@@ -385,7 +437,7 @@ function drawPlayer() {
     ctx.beginPath();
     ctx.arc(x, y, 0.30*cellSize, 0, 2 * Math.PI);
     playerColor = "#ff"+Math.floor(time/10)+Math.floor(time%10)+Math.floor(time/10)+Math.floor(time%10);
-    console.log(playerColor);
+    //console.log(playerColor);
     ctx.fillStyle = playerColor;
     ctx.fill();
 
@@ -415,56 +467,46 @@ function drawSolution() {
     ctx.lineWidth = 4;
     ctx.stroke();
 
-    if(temp != null) {
-        setRoot(temp%cols, Math.floor(temp / cols));
-    } else {
-        rootIndex=null;
-    }
-}
-
-function saveScore(timeTaken, hintsUsed) {
-    const scores = JSON.parse(localStorage.getItem('scores')) || [];
-    scores.push({ timeTaken, hintsUsed });
-    localStorage.setItem('scores', JSON.stringify(scores));
-}
-
-function displayScores() {
-    const scores = JSON.parse(localStorage.getItem('scores')) || [];
-    let scoreText = "";
-    scores.forEach((score, index) => {
-        scoreText += `${index + 1}: Time Taken - ${score.timeTaken}s, Hints Used - ${score.hintsUsed}<br>`;
-    });
-    Swal.fire({
-        title: 'Rezultati',
-        html: scoreText,
-        icon: 'info',
-        confirmButtonText: 'OK',
-        customClass: {
-            confirmButton: 'buttoncolor'
-        }
-    }).then(() => {
-        Swal.fire({
-            title: 'Priplavaj na površje',
-            text: 'V tej igri igraš kot plavalec ki mora priplavati na površje skozi labirint predent ti zmanjka sape/časa. Mehurček ki ti spreminja labirint lahko uničiš in s tem pridobiš več časa za reševanje',
-            icon: 'info',
-            confirmButtonText: 'OK',
-            customClass: {
-                confirmButton: 'buttoncolor'
-            }
-        }).then(() => {
-            gameInterval = setInterval(gameUpdate, gameSpeed);
-        });
-    });
-    
+    setRoot(temp%cols, Math.floor(temp / cols));
 }
 
 document.addEventListener("keydown", function(event) {
-    if(event.key === "h" || event.key === "H" && hints<maxHints){
+    if(document.getElementById("play").style.display != "none") return;
+    if(event.key === "h" || event.key === "H"){
         useHint();
     }else{
         movePlayer(event.key);
     }
 });
+
+function info(){
+    Swal.fire({
+        title: 'Priplavaj na površje',
+        text: 'V tej igri igraš kot plavalec ki mora priplavati na površje skozi labirint predent ti zmanjka sape/časa. Mehurček ki ti spreminja labirint lahko uničiš in s tem pridobiš več časa za reševanje',
+        icon: 'info',
+        confirmButtonText: 'OK',
+        customClass: {
+            confirmButton: 'buttoncolor'
+        }
+    });
+}
+
+function diverStart(){
+    diverStyle.bottom = "8dvh";
+    diverStyle.width = "80px";
+    diverStyle.left = "calc(50% - 25px)";
+    setTimeout(() => {
+        diverStyle.display = "none";
+        diverStyle.bottom = "80dvh";
+    }, 500);
+}
+
+function diverEnd(){
+    diverStyle.display = "block";
+    diverStyle.bottom = "80dvh";
+    diverStyle.width = "160px";
+    diverStyle.left = "calc(50% - 50px)";
+}
 
 function credits(){
     Swal.fire({

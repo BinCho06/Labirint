@@ -40,8 +40,22 @@ p{
     background-image: linear-gradient(aqua, blue);
 }
 #content{
+    position: relative;
     width: min(70dvh, 94%);
     margin: 0 auto;
+}
+#content button{
+    position: absolute;
+    border-radius: 0.4em;
+    cursor: pointer;
+}
+#content button:hover{
+    background-color: #ccc;
+}
+#content>div>button{
+    border: 1px solid;
+    width: 2em;
+    height: 2em;
 }
 #time{
     float: left;
@@ -54,6 +68,7 @@ p{
     width: 100%;
     height: fit-content;
     background-color: rgba(255, 255, 255, 0.2);
+    filter: blur(2vh);
 }
 #surface{
     position: relative;
@@ -79,8 +94,19 @@ p{
 }
 #diver{
     position: absolute;
-    bottom: 2vh;
-    left: 45%;
+    bottom: 2dvh;
+    left: calc(50% - 50px);
     width: 140px;
-    height: 100px;
+    height: auto;
+    transition: all 0.5s ease;
+}
+#play{
+    border: none;
+    padding: 0.5em;
+    font-size: 1.5em;
+    top: calc(50% - 1em);
+    left: calc(50% - 1.5em);
+}
+#info{
+    right: 0;
 }
