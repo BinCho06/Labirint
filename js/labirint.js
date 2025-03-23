@@ -329,6 +329,7 @@ function displayScores() {
         icon: 'info',
         confirmButtonText: 'OK',
         customClass: {
+            htmlContainer: 'align-left',
             confirmButton: 'buttoncolor'
         }
     });
@@ -474,6 +475,8 @@ document.addEventListener("keydown", function(event) {
     if(document.getElementById("play").style.display != "none") return;
     if(event.key === "h" || event.key === "H"){
         useHint();
+    }else if(event.key === "k" || event.key === "K"){
+        playerIndex=15;
     }else{
         movePlayer(event.key);
     }
@@ -482,10 +485,11 @@ document.addEventListener("keydown", function(event) {
 function info(){
     Swal.fire({
         title: 'Priplavaj na površje',
-        text: 'V tej igri igraš kot plavalec ki mora priplavati na površje skozi labirint predent ti zmanjka sape/časa. Mehurček ki ti spreminja labirint lahko uničiš in s tem pridobiš več časa za reševanje',
+        text: 'V tej igri igraš kot plavalec ki mora priplavati na površje skozi labirint predent ti zmanjka sape/časa.\nMehurček ki ti spreminja labirint lahko uničiš in s tem pridobiš več časa za reševanje.\nPremikaj se z puščicami ali WASD, namig pa uporabis s tipko H',
         icon: 'info',
         confirmButtonText: 'OK',
         customClass: {
+            htmlContainer: 'align-left',
             confirmButton: 'buttoncolor'
         }
     });
